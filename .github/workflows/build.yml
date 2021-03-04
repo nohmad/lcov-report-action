@@ -9,12 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      stages:
-        - staging
-        - v2
-  
 
     steps:
     - run: |
-        echo ${{ jobs.build.defaults.stages }}
+        echo ${{ fromJSON('{"a":"b"}') }}
+        echo ${{ contains(fromJSON('["staging","v2"]'), 'staging') }}
