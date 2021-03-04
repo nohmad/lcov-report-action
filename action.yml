@@ -1,0 +1,17 @@
+name: "Coverage Report for lcov format"
+description: "Comments a pull request with code coverage"
+author: "GY Noh"
+branding:
+  icon: "check-square"
+  color: "green"
+inputs:
+  github-token:
+    description: "secrets.GITHUB_TOKEN"
+    required: true
+  lcov-path:
+    description: "Relative path of coverage/lcov.info"
+    required: false
+    default: 'coverage/lcov.info'
+runs:
+  using: "node12"
+  main: "dist/index.js"
