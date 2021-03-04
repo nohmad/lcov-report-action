@@ -1,5 +1,7 @@
 # lcov-report-action
 
+[![build](https://github.com/nohmad/lcov-report-action/actions/workflows/build.yml/badge.svg)](https://github.com/nohmad/lcov-report-action/actions/workflows/build.yml)
+
 Add summary of coverage report as comment on Pull Request.
 
 ## Usage
