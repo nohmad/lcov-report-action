@@ -21,7 +21,7 @@ describe("lcov-report-action", () => {
     const lcovInfo = 'coverage/lcov.info';
     getInput.mockReturnValueOnce(lcovInfo);
     getInput.mockReturnValueOnce('TOKEN');
-    _parseLCOV.mockReturnValue([{branches: {hit: 3, found: 1}, lines: {hit: 5, found: 3}}] as any);
+    _parseLCOV.mockReturnValue([{branches: {hit: 2, found: 3}, lines: {hit: 3, found: 5}}] as any);
     readFileSync.mockReturnValue(Buffer.from(''));
     const createComment = jest.fn() as any;
     getOctokit.mockReturnValue({
@@ -37,8 +37,8 @@ describe("lcov-report-action", () => {
 
     expect(readFileSync).toHaveBeenCalledWith(lcovInfo);
     const {body, issue_number} = Array.from(createComment.mock.calls[0])[0] as any;
-    expect(body).toMatch(/Branches: \d+\/\d+ \([\d.]+%\)/);
-    expect(body).toMatch(/Lines: \d+\/\d+ \([\d.]+%\)/);
+    expect(body).toMatch(/2\/3 \([\d.]+%\) branches/);
+    expect(body).toMatch(/3\/5 \([\d.]+%\) lines/);
     expect(issue_number).toEqual(123);
   });
 
