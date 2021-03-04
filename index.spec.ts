@@ -2,38 +2,59 @@ import main from './index';
 
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-
-const getInput = core.getInput as jest.MockedFunction<typeof core.getInput>;
-const getOctokit = github.getOctokit as any;
+import parseLCOV from 'parse-lcov';
+import fs from 'fs';
 
 jest.mock('@actions/core');
 jest.mock('@actions/github');
+jest.mock('parse-lcov');
+jest.mock('fs');
 
+const getInput = core.getInput as jest.MockedFunction<typeof core.getInput>;
+const getOctokit = github.getOctokit as any;
+const _parseLCOV = parseLCOV as jest.MockedFunction<typeof parseLCOV>;
 
-describe("lcov-report", () => {
-  it("leaves comment for PR", async () => {    
+const readFileSync = fs.readFileSync as jest.MockedFunction<typeof fs.readFileSync>;
+
+describe("lcov-report-action", () => {
+  it("leaves comment for PR", async () => {
+    const lcovInfo = 'coverage/lcov.info';
+    getInput.mockReturnValueOnce(lcovInfo);
     getInput.mockReturnValueOnce('TOKEN');
-    getInput.mockReturnValueOnce('coverage/lcov.info');
+    _parseLCOV.mockReturnValue([{branches: {hit: 3, found: 1}, lines: {hit: 5, found: 3}}] as any);
+    readFileSync.mockReturnValue(Buffer.from(''));
     const createComment = jest.fn() as any;
-    const listPullRequestsAssociatedWithCommit = jest.fn() as any;
-    listPullRequestsAssociatedWithCommit.mockReturnValue({data: [{number: 123}]});
     getOctokit.mockReturnValue({
-      repos: {listPullRequestsAssociatedWithCommit},
       issues: {createComment}
-    });
+    } as any);
     Object.assign(github, {context: {
+      eventName: 'pull_request',
       repo: {repo: 'repo', owner: 'owner'},
-      payload: {after: 'context.payload.after'}
+      payload: {pull_request: {number: 123}}
     }});
     
     await main();
 
-    const {repo, owner, commit_sha} = Array.from(listPullRequestsAssociatedWithCommit.mock.calls[0])[0] as any;
-    expect({repo, owner}).toEqual(github.context.repo);
-    expect(commit_sha).toEqual(github.context.payload.after);
+    expect(readFileSync).toHaveBeenCalledWith(lcovInfo);
     const {body, issue_number} = Array.from(createComment.mock.calls[0])[0] as any;
     expect(body).toMatch(/Branches: \d+\/\d+ \([\d.]+%\)/);
     expect(body).toMatch(/Lines: \d+\/\d+ \([\d.]+%\)/);
     expect(issue_number).toEqual(123);
+  });
+
+  it("returns immediately if eventName is not pull_request", () => {
+    main();
+  });
+
+  it("does nothing if issue_number is not present", async () => {
+    getInput.mockReturnValueOnce('coverage/lcov.info');
+    _parseLCOV.mockReturnValue([{branches: {hit: 3, found: 1}, lines: {hit: 5, found: 3}}] as any);
+    readFileSync.mockReturnValue(Buffer.from(''));
+    Object.assign(github, {context: {
+      eventName: 'pull_request',
+      payload: {},
+    }});
+    
+    await main();
   });
 });
