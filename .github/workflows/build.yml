@@ -6,10 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
-defaults:
-  stages:
-    - staging
-    - v2
+#defaults:
+#  stages:
+#    - staging
+#    - v2
   
 jobs:
   build:
@@ -17,5 +17,5 @@ jobs:
 
     steps:
     - run: |
-        echo ${{ defaults.stages }}
+        echo "TEST"
       
