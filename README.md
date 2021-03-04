@@ -10,7 +10,7 @@ No need to run if not triggered by pull_request
 
 ```yaml
     - name: Coverage Report on Pull Request
-      uses: nohmad/lcov-report-action
+      uses: nohmad/lcov-report-action@v1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         lcov-info: coverage/lcov.info
